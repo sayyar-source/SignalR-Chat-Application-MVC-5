@@ -1,0 +1,49 @@
+﻿
+@{
+    ViewBag.Title = "Chat";
+}
+
+<h2>Chat</h2>
+<div class="container" style="border:groove;background-color:antiquewhite;padding:10px">
+    <input type="text" id="displayname" />
+    <br /> <br />
+
+<textarea rows="4" cols="50" id="message">
+
+</textarea>
+    <br />
+    <input type="button" id="sendmessage" value="Send" />
+    <input type="hidden" id="displayname" />
+    <ul id="discussion"></ul>
+</div>
+@section scripts{
+
+    <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        $(function () {
+            var chat = $.connection.chatHub;
+            chat.client.addnewmessage = function (name, message) {
+                $('#discussion').append('<li><strong>' + name + '</strong>:' + message + '</li>')
+            }
+            
+            $("#displayname").val(prompt('enter name', ''));
+            $('#message').focus();
+             // Start the connection.
+            $.connection.hub.start().done(function () {
+                $('#sendmessage').click(function () {
+                    var name = $('#displayname').val();
+                    var message = $('#message').val();
+                    //alert($.connection.hub.id)
+                    chat.server.sendToAll(name, message);
+                    chat.server.sendToOne(name, "private message", $.connection.hub.id);
+                    $('#message').val('').focus();
+                });
+           
+        });
+    
+
+        });
+    </script>
+}
+
